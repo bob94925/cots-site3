@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COTS Software Implementation Framework — Critical Logic</title>
+<link href="https://fonts.googleapis.com/css2?family=Robato:wght@300;400;500;600;700;800&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Root ───────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:   #1a2f5e;
+  --blue:   #1e4d8c;
+  --blue2:  #2f6ab5;
+  --blue3:  #4a90d9;
+  --orange: #f5a623;
+  --org2:   #e8922a;
+  --white:  #ffffff;
+  --offwh:  #f4f7fc;
+  --light:  #e8eef7;
+  --mid:    #c5d3e8;
+  --gray:   #6b7d99;
+  --dark:   #1c2b45;
+  --text:   #2c3e5a;
+}
+
+body {
+  background: var(--offwh);
+  font-family: 'Open Sans', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── Top Bar ──────────────────────────────────────── */
+.top-bar {
+  background: var(--navy);
+  padding: 10px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.top-bar img { height: 38px; }
+.top-bar-tag {
+  font-family: 'Robato', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+
+/* ── Hero ─────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 60%, var(--blue2) 100%);
+  padding: 32px 40px 28px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 500px; height: 300px;
+  background: radial-gradient(circle, rgba(74,144,217,.15), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hero-left { max-width: 800x; }
+.hero-eyebrow {
+  font-family: 'Robato', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 10px;
+}
+.hero h1 {
+  font-family: 'Robato', sans-serif;
+  font-size: clamp(22px, 3.5vw, 36px);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.15;
+  margin-bottom: 0;
+  letter-spacing: -.4px;
+}
+.hero h1 span { color: var(--orange); }
+.hero-right {
+  display: flex;
+  align-items: center;
+}
+.hero-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,.6);
+  font-weight: 300;
+  line-height: 1.65;
+  max-width: 420px;
+}
+
+/* ── Main wrapper ──────────────────────────────────── */
+.main {
+  padding: 32px 40px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Phase header ──────────────────────────────────── */
+.phase-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.phase-badge {
+  font-family: 'Robato', sans-serif;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.badge-inp  { background: rgba(245,166,35,.12); color: var(--org2);  border: 1px solid rgba(245,166,35,.35); }
+.badge-impl { background: rgba(30,77,140,.10);  color: var(--blue);  border: 1px solid rgba(30,77,140,.25); }
+.badge-mnt  { background: rgba(26,47,94,.08);   color: var(--navy);  border: 1px solid rgba(26,47,94,.2); }
+.phase-title {
+  font-family: 'Robato', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  color: var(--gray);
+}
+.phase-line { flex: 1; height: 1px; background: var(--mid); }
+
+/* ── Card grids ────────────────────────────────────── */
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 0;
+}
+.impl-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* ── Base card ─────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border: 1.5px solid var(--light);
+  border-radius: 8px;
+  padding: 18px 14px 16px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(26,47,94,.07);
+  cursor: pointer;
+  position: relative;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  overflow: visible;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 8px 8px 0 0;
+}
+.card.inp::before  { background: var(--orange); }
+.card.impl::before { background: var(--blue2); }
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(26,47,94,.15);
+  border-color: var(--blue3);
+  z-index: 10;
+}
+.card.inp:hover  { border-color: var(--orange); }
+
+.card-icon-wrap {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px;
+  font-size: 17px;
+  transition: transform .18s ease;
+}
+.card:hover .card-icon-wrap { transform: scale(1.1); }
+.card.inp  .card-icon-wrap { background: #fef3e0; border: 1px solid #f5d9a0; }
+.card.impl .card-icon-wrap { background: #ebf3fc; border: 1px solid var(--mid); }
+
+.card h3 {
+  font-family: 'Robato', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dark);
+  line-height: 1.3;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: .2px;
+}
+.card p {
+  font-size: 10px;
+  color: var(--gray);
+  line-height: 1.5;
+}
+.step-num {
+  font-family: 'Robato', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--blue3);
+  background: var(--light);
+  border: 1px solid var(--mid);
+  border-radius: 4px;
+  padding: 2px 6px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+/* ── Testing card ──────────────────────────────────── */
+.testing-card {
+  background: var(--white);
+  border: 1.5px solid var(--light);
+  border-left: 4px solid var(--blue);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 2px 10px rgba(26,47,94,.07);
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  position: relative;
+}
+.testing-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(26,47,94,.15);
+  border-left-color: var(--blue2);
+  z-index: 10;
+}
+.testing-icon {
+  flex-shrink: 0;
+  width: 42px; height: 42px;
+  background: #ebf3fc;
+  border: 1px solid var(--mid);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.testing-body { flex: 1; }
+.testing-body h3 {
+  font-family: 'Robato', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dark);
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  margin-bottom: 4px;
+}
+.testing-body p { font-size: 11px; color: var(--gray); line-height: 1.5; }
+.test-tags {
+  display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0;
+}
+.test-tag {
+  font-family: 'Robato', sans-serif;
+  font-size: 9px; font-weight: 600;
+  padding: 4px 10px;
+  background: rgba(30,77,140,.07);
+  border: 1px solid rgba(30,77,140,.18);
+  border-radius: 4px;
+  color: var(--blue);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── Connectors ─────────────────────────────────────── */
+.connector {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 14px 0;
+}
+.conn-line { width: 2px; height: 18px; background: linear-gradient(180deg, var(--orange), var(--blue2)); }
+.conn-pill {
+  font-family: 'Robato', sans-serif;
+  font-size: 8px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--blue);
+  background: var(--light);
+  border: 1px solid var(--mid);
+  padding: 3px 12px; border-radius: 20px;
+  margin: 5px 0;
+}
+.conn-arrow {
+  width: 0; height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 10px solid var(--blue2);
+}
+
+/* ── Funnel ──────────────────────────────────────────── */
+.funnel-wrap { padding: 12px 0 10px; }
+.funnel-svg  { width: 100%; height: 52px; display: block; }
+
+/* ── Maintenance card ────────────────────────────────── */
+.maint-card {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+  border-radius: 10px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  box-shadow: 0 8px 32px rgba(26,47,94,.22);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.maint-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--blue2);
+}
+.maint-card::after {
+  content: '';
+  position: absolute;
+  bottom: -50px; right: -50px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(74,144,217,.12), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.maint-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(26,47,94,.3);
+  z-index: 10;
+}
+.maint-icon {
+  flex-shrink: 0;
+  width: 64px; height: 64px;
+  background: rgba(255,255,255,.1);
+  border: 2px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+}
+.maint-body { flex: 1; }
+.maint-eyebrow {
+  font-family: 'Robato', sans-serif;
+  font-size: 8px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #5577aa;
+  margin-bottom: 4px;
+}
+.maint-body h2 {
+  font-family: 'Robato', sans-serif;
+  font-size: clamp(16px, 2.5vw, 22px);
+  font-weight: 800;
+  color: var(--white);
+  letter-spacing: -.2px;
+  margin-bottom: 5px;
+}
+.maint-body p { font-size: 11px; color: rgba(255,255,255,.6); line-height: 1.6; max-width: 480px; }
+.maint-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.maint-tag {
+  font-family: 'Robato', sans-serif;
+  font-size: 9px; font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.maint-tag.org { background: rgba(245,166,35,.18); border: 1px solid rgba(245,166,35,.4); color: var(--orange); }
+.maint-tag.blu { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.75); }
+
+/* ── Footer ──────────────────────────────────────────── */
+.footer {
+  background: var(--navy);
+  padding: 16px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.legend { display: flex; gap: 20px; flex-wrap: wrap; }
+.legend-item {
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'Robato', sans-serif;
+  font-size: 9px; font-weight: 500; letter-spacing: .5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+}
+.leg-sw { width: 10px; height: 10px; border-radius: 2px; }
+.footer-copy {
+  font-family: 'Robato', sans-serif;
+  font-size: 8.5px;
+  color: rgba(255,255,255,.28);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ════════════════════════════════════════════════════
+   POPUP SYSTEM
+════════════════════════════════════════════════════ */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 25, 50, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease;
+}
+.popup-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.popup {
+  background: var(--white);
+  border-radius: 14px;
+  box-shadow: 0 24px 72px rgba(15,25,50,.28), 0 4px 16px rgba(15,25,50,.12);
+  width: min(560px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: translateY(16px) scale(.97);
+  transition: transform .25s cubic-bezier(.34,1.2,.64,1), opacity .22s ease;
+  opacity: 0;
+  position: absolute;
+}
+.popup-overlay.active .popup {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.popup-header {
+  padding: 24px 24px 18px;
+  border-bottom: 1px solid var(--light);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  position: relative;
+}
+.popup-icon-wrap {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.popup-icon-wrap.inp  { background: #fef3e0; border: 1px solid #f5d9a0; }
+.popup-icon-wrap.impl { background: #ebf3fc; border: 1px solid var(--mid); }
+.popup-icon-wrap.mnt  { background: rgba(26,47,94,.08); border: 1px solid rgba(26,47,94,.2); }
+
+.popup-header-text { flex: 1; }
+.popup-phase-label {
+  font-family: 'Robato', sans-serif;
+  font-size: 8px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.popup-phase-label.inp  { color: var(--org2); }
+.popup-phase-label.impl { color: var(--blue); }
+.popup-phase-label.mnt  { color: var(--navy); }
+
+.popup-title {
+  font-family: 'Robato', sans-serif;
+  font-size: 20px; font-weight: 800;
+  color: var(--dark);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.popup-subtitle {
+  font-size: 12px; color: var(--gray); font-weight: 300;
+}
+
+.popup-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 30px; height: 30px;
+  background: var(--light);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  color: var(--gray);
+  transition: background .15s, color .15s;
+  line-height: 1;
+}
+.popup-close:hover { background: var(--mid); color: var(--dark); }
+
+.popup-body { padding: 20px 24px 24px; }
+
+.popup-section { margin-bottom: 18px; }
+.popup-section:last-child { margin-bottom: 0; }
+
+.popup-section-title {
+  font-family: 'Robato', sans-serif;
+  font-size: 9px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--light);
+}
+
+.popup-desc {
+  font-size: 13px; color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.popup-bullets {
+  list-style: none;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.popup-bullets li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 12.5px; color: var(--text); line-height: 1.5;
+}
+.popup-bullets li::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--blue3);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.popup-bullets li.org::before { background: var(--orange); }
+
+.popup-tags {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  margin-top: 10px;
+}
+.popup-tag {
+  font-family: 'Robato', sans-serif;
+  font-size: 9.5px; font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 5px;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+.popup-tag.inp  { background: rgba(245,166,35,.1); border: 1px solid rgba(245,166,35,.3); color: var(--org2); }
+.popup-tag.impl { background: rgba(30,77,140,.07); border: 1px solid rgba(30,77,140,.2); color: var(--blue); }
+.popup-tag.mnt  { background: rgba(26,47,94,.06);  border: 1px solid rgba(26,47,94,.18); color: var(--navy); }
+
+.popup-kpi-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-top: 10px;
+}
+.popup-kpi {
+  background: var(--offwh);
+  border: 1px solid var(--light);
+  border-radius: 8px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.popup-kpi-num {
+  font-family: 'Robato', sans-serif;
+  font-size: 22px; font-weight: 800;
+  color: var(--blue);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.popup-kpi-num.org { color: var(--orange); }
+.popup-kpi-label {
+  font-size: 10px; color: var(--gray); line-height: 1.3;
+}
+
+/* ── Hover hint ──────────────────────────────────────── */
+.hover-hint {
+  position: absolute;
+  bottom: 7px; right: 10px;
+  font-size: 8px;
+  color: var(--mid);
+  font-family: 'Robato', sans-serif;
+  letter-spacing: .5px;
+  opacity: 0;
+  transition: opacity .2s;
+  pointer-events: none;
+}
+.card:hover .hover-hint,
+.testing-card:hover .hover-hint,
+.maint-card:hover .hover-hint { opacity: 1; }
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero         { animation: fadeUp .5s ease both; }
+.section-inp  { animation: fadeUp .5s .15s ease both; }
+.connector    { animation: fadeUp .4s .28s ease both; }
+.section-impl { animation: fadeUp .5s .38s ease both; }
+.funnel-wrap  { animation: fadeUp .4s .52s ease both; }
+.section-mnt  { animation: fadeUp .5s .62s ease both; }
+
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+ <img src="critical-logic-logo.png" alt="Critical Logic">
+ <span class="top-bar-tag">Inteligent Quality Management - IQM</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    
+    <div class="hero-eyebrow">▸ Project Lifecycle</div>
+    <h1>COTS Software <span>Implementation</span></h1>
+  </div>
+  <div class="hero-right">
+    <p class="hero-sub">From requirements gathering through maintenance &amp; operations — built on Critical Logic's IQM. <em>Click any element for details.</em></p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- PHASE 1 -->
+  <div class="section-inp">
+    <div class="phase-header">
+      <span class="phase-badge badge-inp">Phase 01</span>
+      <span class="phase-title">Inputs &amp; Requirements</span>
+      <div class="phase-line"></div>
+    </div>
+    <div class="input-grid">
+
+      <div class="card inp" onclick="showPopup('vendor')">
+        <div class="card-icon-wrap">🏢</div>
+        <h3>Vendor</h3>
+        <p>Software capabilities, roadmap &amp; licensing</p>
+        <span class="hover-hint">Click for IQM benefits</span>
+      </div>
+
+      <div class="card inp" onclick="showPopup('bizreq')">
+        <div class="card-icon-wrap">📋</div>
+        <h3>Business Requirements</h3>
+        <p>Process needs, workflows &amp; objectives</p>
+        <span class="hover-hint">Click for IQM benefits</span>
+      </div>
+
+      <div class="card inp" onclick="showPopup('custreq')">
+        <div class="card-icon-wrap">👥</div>
+        <h3>Customer Requirements</h3>
+        <p>End-user expectations &amp; service levels</p>
+        <span class="hover-hint">Click for IQM benefits</span>
+      </div>
+
+      <div class="card inp" onclick="showPopup('legacy')">
+        <div class="card-icon-wrap">🗄️</div>
+        <h3>Legacy Systems</h3>
+        <p>Existing data models &amp; constraints</p>
+        <span class="hover-hint">Click for IQM benefits</span>
+      </div>
+
+      <div class="card inp" onclick="showPopup('interfaces')">
+        <div class="card-icon-wrap">🔗</div>
+        <h3>Interfaces</h3>
+        <p>Third-party systems &amp; API touchpoints</p>
+        <span class="hover-hint">Click for IQM benefits</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CONNECTOR -->
+  <div class="connector">
+    <div class="conn-line"></div>
+    <div class="conn-pill">feeds into</div>
+    <div class="conn-line"></div>
+    <div class="conn-arrow"></div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="section-impl">
+    <div class="phase-header">
+      <span class="phase-badge badge-impl">Phase 02</span>
+      <span class="phase-title">Implementation &amp; Delivery</span>
+      <div class="phase-line"></div>
+    </div>
+    <div class="impl-grid">
+
+      <div class="card impl" onclick="showPopup('config')">
+        <div class="step-num">STEP 01</div>
+        <div class="card-icon-wrap">⚙️</div>
+        <h3>System Configuration</h3>
+        <p>Parameters, roles, workflow rules &amp; feature enablement</p>
+        <span class="hover-hint">Click for IQM benefits</span>
+      </div>
+
+      <div class="card impl" onclick="showPopup('custom')">
+        <div class="step-num">STEP 02</div>
+        <div class="card-icon-wrap">🔧</div>
+        <h3>Customizations</h3>
+        <p>Bespoke code, UI mods &amp; gap-fill development</p>
+        <span class="hover-hint">Click for IQM benefits</span>
+      </div>
+
+      <div class="card impl" onclick="showPopup('dataflow')">
+        <div class="step-num">STEP 03</div>
+        <div class="card-icon-wrap">🔄</div>
+        <h3>Interface &amp; Data Flows</h3>
+        <p>ETL pipelines, APIs, migration &amp; real-time sync</p>
+        <span class="hover-hint">Click for IQM benefits</span>
+      </div>
+
+      <div class="card impl" onclick="showPopup('ocm')">
+        <div class="step-num">STEP 04</div>
+        <div class="card-icon-wrap">🎓</div>
+        <h3>Org Change Management</h3>
+        <p>Training, communications &amp; adoption programs</p>
+        <span class="hover-hint">Click for IQM benefits</span>
+      </div>
+
+    </div>
+
+    <!-- Testing card -->
+    <div class="testing-card" onclick="showPopup('testing')">
+      <div class="testing-icon">🚀</div>
+      <div class="testing-body">
+        <h3>Testing &amp; Deployment</h3>
+        <p>Comprehensive test execution · Cutover planning · Production deployment · Hypercare stabilization</p>
+      </div>
+      <div class="test-tags">
+        <span class="test-tag">Unit Testing</span>
+        <span class="test-tag">Integration</span>
+        <span class="test-tag">UAT</span>
+        <span class="test-tag">Auto Regression</span>
+        <span class="test-tag">Performance</span>
+        <span class="test-tag">Go-Live</span>
+      </div>
+      <span class="hover-hint">Click for IQM benefits</span>
+    </div>
+  </div>
+
+  <!-- FUNNEL -->
+  <div class="funnel-wrap">
+    <svg class="funnel-svg" viewBox="0 0 900 52" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <line x1="80"  y1="0" x2="450" y2="40" stroke="url(#fl1)" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <line x1="820" y1="0" x2="450" y2="40" stroke="url(#fl2)" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <line x1="450" y1="0" x2="450" y2="40" stroke="#2f6ab5" stroke-width="2"/>
+      <polygon points="441,40 459,40 450,52" fill="#1a2f5e"/>
+      <defs>
+        <linearGradient id="fl1" x1="80" y1="0" x2="450" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#f5a623" stop-opacity=".4"/>
+          <stop offset="100%" stop-color="#2f6ab5" stop-opacity=".7"/>
+        </linearGradient>
+        <linearGradient id="fl2" x1="820" y1="0" x2="450" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#f5a623" stop-opacity=".4"/>
+          <stop offset="100%" stop-color="#2f6ab5" stop-opacity=".7"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="section-mnt">
+    <div class="phase-header">
+      <span class="phase-badge badge-mnt">Phase 03</span>
+      <span class="phase-title">Sustained Operations</span>
+      <div class="phase-line"></div>
+    </div>
+    <div class="maint-card" onclick="showPopup('maint')">
+      <div class="maint-icon">⚡</div>
+      <div class="maint-body">
+        <div class="maint-eyebrow">Phase 03 · Sustained Operations</div>
+        <h2>Maintenance, Operations &amp; Evolution</h2>
+        <p>Ongoing system health monitoring, continuous improvement cycles, vendor relationship management, end-user support, and lifecycle evolution.</p>
+        <div class="maint-tags">
+          <span class="maint-tag org">Incident Management</span>
+          <span class="maint-tag org">Patch &amp; Upgrades</span>
+          <span class="maint-tag blu">Performance Monitoring</span>
+          <span class="maint-tag blu">User Support</span>
+          <span class="maint-tag blu">Continuous Improvement</span>
+          <span class="maint-tag blu">Vendor SLA</span>
+          <span class="maint-tag blu">Security &amp; Compliance</span>
+          <span class="maint-tag blu">Automated Regression</span>
+        </div>
+      </div>
+      <span class="hover-hint">Click for IQM benefits</span>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="legend">
+    <div class="legend-item"><div class="leg-sw" style="background:var(--orange)"></div>Inputs &amp; Requirements</div>
+    <div class="legend-item"><div class="leg-sw" style="background:var(--blue2)"></div>Implementation &amp; Delivery</div>
+    <div class="legend-item"><div class="leg-sw" style="background:var(--navy)"></div>Maintenance &amp; Operations</div>
+  </div>
+  <div class="footer-copy">© Critical Logic · IQM Framework · criticallogic.com</div>
+</div>
+
+<!-- ════════════════════════════
+     POPUP OVERLAY
+════════════════════════════ -->
+<div class="popup-overlay" id="overlay" onclick="closeOnOverlay(event)">
+  <div class="popup" id="popup" onmouseleave="closePopup()">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <div id="popup-content"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     POPUP DATA
+════════════════════════════ -->
+<script>
+const POPUPS = {
+
+  vendor: {
+    icon: '🏢', type: 'inp', phase: 'Phase 01 · Inputs & Requirements',
+    title: 'Vendor',
+    subtitle: 'Software provider, product capabilities & commercial terms',
+    desc: 'The COTS vendor defines the boundaries of what the system can do out of the box. A thorough vendor evaluation sets the foundation for every downstream decision — from configuration depth to customization risk.',
+    sections: [
+      {
+        label: 'Key Activities',
+        bullets: [
+          'Vendor capability assessment & product demos',
+          'License model evaluation (perpetual, subscription, SaaS)',
+          'Support tiers, SLA commitments & roadmap alignment',
+          'Reference customer interviews & independent reviews',
+          'Contract negotiation — implementation, support & data rights',
+        ]
+      },
+      {
+        label: 'Critical Questions',
+        bullets: [
+          'Does the product cover ≥80% of requirements out-of-the-box?',
+          'What is the vendor\'s implementation partner ecosystem?',
+          'How frequently are major releases issued, and what is the upgrade path?',
+        ]
+      }
+    ],
+    tags: ['RACI Matrix', 'Scope & Options', 'Customizations', 'Roles & Responsibilities', 'Change Management']
+  },
+
+  bizreq: {
+    icon: '📋', type: 'inp', phase: 'Phase 01 · Inputs & Requirements',
+    title: 'Business Requirements',
+    subtitle: 'Organizational process needs, workflows & strategic objectives',
+    desc: 'Business requirements translate organizational goals into functional specifications. Poorly captured requirements are the #1 driver of implementation failure — Critical Logic\'s IQM modeling approach eliminates ambiguity before a single line of configuration is written.',
+    sections: [
+      {
+        label: 'Elicitation Techniques',
+        bullets: [
+          'Stakeholder workshops & structured interviews',
+          'Current-state process mapping (as-is → to-be)',
+          'Requirements modeling using IQM classification-tree method',
+          'Traceability matrix linking requirements to test cases',
+          'Sign-off and baseline approval by business owners',
+        ]
+      },
+      {
+        label: 'Common Pitfalls',
+        bullets: [
+          'Conflating "nice to have" with "must have" requirements',
+          'Missing edge-case and exception-path scenarios',
+          'Inadequate sign-off leading to scope creep during build',
+        ]
+      }
+    ],
+    kpis: [
+      { num: '50%', label: 'Reduction in elicitation effort using IQM modeling', type: 'org' },
+      { num: '4×', label: 'Staff leverage vs. traditional requirements gathering', type: '' },
+      { num: '↓80%', label: 'Defect rate when requirements are fully modeled first', type: '' },
+    ],
+    tags: ['AI', 'Process Mapping', 'IQM Modeling', 'Traceability']
+  },
+
+  custreq: {
+    icon: '👥', type: 'inp', phase: 'Phase 01 · Inputs & Requirements',
+    title: 'Customer Requirements',
+    subtitle: 'End-user expectations, UX needs & service level agreements',
+    desc: 'Customer requirements capture what the end users — internal or external — need from the system to do their jobs effectively. These requirements often conflict with technical constraints and must be carefully prioritized.',
+    sections: [
+      {
+        label: 'Collection Methods',
+        bullets: [
+          'User journey mapping and persona development',
+          'Surveys, focus groups & usability testing on mockups',
+          'Service level definition: response times, availability, accessibility',
+          'Regulatory & compliance requirements (ADA, HIPAA, SOC2, etc.)',
+          'Feedback loops — phased pilots with real users before full rollout',
+        ]
+      },
+      {
+        label: 'Output Artifacts',
+        bullets: [
+          'Validated user stories with acceptance criteria',
+          'SLA matrix with measurable thresholds',
+          'Prioritized backlog ranked by business value',
+        ]
+      }
+    ],
+    tags: ['User Stories', 'Use Cases', 'IQM Modeling', 'Compliance']
+  },
+
+  legacy: {
+    icon: '🗄️', type: 'inp', phase: 'Phase 01 · Inputs & Requirements',
+    title: 'Legacy Systems',
+    subtitle: 'Existing platforms, data structures & technical debt inventory',
+    desc: 'Legacy systems represent both the richest source of institutional knowledge and the greatest source of implementation risk. A structured legacy analysis prevents data loss, business disruption, and costly post-go-live remediation.',
+    sections: [
+      {
+        label: 'Assessment Areas',
+        bullets: [
+          'System inventory — all applications in scope for retirement or integration',
+          'Data profiling: volumes, quality scoring, schema documentation',
+          'Business rules buried in legacy code or manual workarounds',
+          'Technical debt: undocumented customizations, unsupported versions',
+          'Data archiving strategy for records not migrated to new system',
+        ]
+      },
+      {
+        label: 'Migration Decisions',
+        bullets: [
+          'Big-bang vs. phased cutover approach',
+          'Data cleansing rules and transformation logic',
+          'Parallel-run period and reconciliation testing plan',
+        ]
+      }
+    ],
+    tags: ['Data Profiling', 'Automation', 'IQM Modeling', 'Data Migration']
+  },
+
+  interfaces: {
+    icon: '🔗', type: 'inp', phase: 'Phase 01 · Inputs & Requirements',
+    title: 'Interfaces',
+    subtitle: 'Third-party systems, APIs & integration touchpoints',
+    desc: 'Every interface is a potential failure point. A complete interface inventory — documented before build begins — prevents the costly discovery of undocumented integrations after go-live.',
+    sections: [
+      {
+        label: 'Interface Catalog',
+        bullets: [
+          'Inbound & outbound data flows with source/target system mapping',
+          'Authentication methods: API keys, OAuth2, SAML, certificates',
+          'Data format specifications: REST/JSON, SOAP/XML, flat file, EDI',
+          'Volume & frequency: real-time, batch, event-driven',
+          'Error handling, retry logic & alerting requirements',
+        ]
+      },
+      {
+        label: 'Governance',
+        bullets: [
+          'Interface register as a living document throughout the project',
+          'API versioning and deprecation strategy',
+          'Third-party SLA obligations and contact escalation paths',
+        ]
+      }
+    ],
+    tags: ['Data Mapping', 'IQM Modeling', 'AI', 'Integration Accountabilty']
+  },
+
+  config: {
+    icon: '⚙️', type: 'impl', phase: 'Phase 02 · Step 01 — Implementation',
+    title: 'System Configuration',
+    subtitle: 'Parameter setup, roles, workflow rules & native feature enablement',
+    desc: 'Configuration is the first line of implementation — using the COTS system\'s built-in settings to meet requirements without writing custom code. The golden rule: configure first, customize only when necessary.',
+    sections: [
+      {
+        label: 'Configuration Domains',
+        bullets: [
+          'Organizational hierarchy, business units & entity setup',
+          'User roles, permissions matrix & access control policies',
+          'Workflow rules, approval chains & automated notifications',
+          'Lookup tables, code sets & reference data population',
+          'System parameters, feature flags & module activation',
+        ]
+      },
+      {
+        label: 'Best Practices',
+        bullets: [
+          'Document every configuration decision with business justification',
+          'Build configuration in a sandbox before promoting to UAT',
+          'Avoid "config creep" — excessive toggles that increase maintenance burden',
+        ]
+      }
+    ],
+    tags: ['IQM Modeling', 'Workflow Automation', 'Sandbox']
+  },
+
+  custom: {
+    icon: '🔧', type: 'impl', phase: 'Phase 02 · Step 02 — Implementation',
+    title: 'Customizations',
+    subtitle: 'Bespoke development for gaps the COTS product cannot cover natively',
+    desc: 'Every customization creates long-term maintenance liability and upgrade risk. Customizations should only be built when a gap cannot be addressed by configuration, process re-engineering, or a vendor roadmap feature. Each one requires formal approval.',
+    sections: [
+      {
+        label: 'Customization Types',
+        bullets: [
+          'UI extensions — custom screens, fields & dashboards',
+          'Business logic — custom rules engines, calculations & validations',
+          'Reports & analytics — bespoke outputs beyond standard templates',
+          'Integrations — custom connectors where standard APIs don\'t exist',
+          'Workflow extensions — complex approval chains beyond native capability',
+        ]
+      },
+      {
+        label: 'Governance',
+        bullets: [
+          'Customization register with owner, rationale & upgrade impact assessment',
+          'Peer code review and vendor compatibility verification',
+          'Regression test suite must cover all custom code paths',
+        ]
+      }
+    ],
+    tags: ['Scope Creep', 'Accountability', 'Testing']
+  },
+
+  dataflow: {
+    icon: '🔄', type: 'impl', phase: 'Phase 02 · Step 03 — Implementation',
+    title: 'Interface & Data Flows',
+    subtitle: 'ETL pipelines, API integrations, data migration & real-time sync',
+    desc: 'Data flows are the connective tissue of the implementation. Poor interface design is responsible for a significant portion of post-go-live defects. Thorough testing of every data path — before go-live — is non-negotiable.',
+    sections: [
+      {
+        label: 'Build Activities',
+        bullets: [
+          'ETL pipeline development: extract, transform, load with full logging',
+          'API integration build & mock-server testing before partner availability',
+          'Data migration scripts with full reconciliation counts',
+          'Real-time event stream configuration (queues, webhooks, pub/sub)',
+          'Error queues, dead-letter handling & operational dashboards',
+        ]
+      },
+      {
+        label: 'Testing Requirements',
+        bullets: [
+          'End-to-end interface testing with source and target systems',
+          'Volume & performance testing: peak load scenarios',
+          'Failover and retry logic validation under simulated outage',
+        ]
+      }
+    ],
+    tags: ['Process Automation', 'Data Migration', 'Data Mapping & Conversion']
+  },
+
+  ocm: {
+    icon: '🎓', type: 'impl', phase: 'Phase 02 · Step 04 — Implementation',
+    title: 'Org Change Management',
+    subtitle: 'Training, stakeholder engagement & adoption strategy',
+    desc: 'Technology projects fail when the human side of change is underestimated. OCM is not a checkbox — it is a parallel workstream that runs from day one through hypercare, ensuring users adopt the new system and the organization realizes its intended value.',
+    sections: [
+      {
+        label: 'OCM Workstreams',
+        bullets: [
+          'Stakeholder analysis & RACI matrix — who is impacted and how',
+          'Change impact assessment by role and business process',
+          'Communication plan: cadence, channels & messaging by audience',
+          'Training design: role-based curricula, job aids & simulations',
+          'Resistance management: early adopter program & champion network',
+        ]
+      },
+      {
+        label: 'Adoption Metrics',
+        bullets: [
+          'System utilization rate vs. baseline target by 30/60/90 days post-go-live',
+          'Training completion rate and assessment scores',
+          'Support ticket volume as a proxy for adoption friction',
+        ]
+      }
+    ],
+    tags: ['RACI', 'Training', 'Instructional Design']
+  },
+
+  testing: {
+    icon: '🚀', type: 'impl', phase: 'Phase 02 · Step 05 — Implementation',
+    title: 'Testing & Deployment',
+    subtitle: 'Comprehensive quality assurance from unit tests through production go-live',
+    desc: 'Testing is not a phase — it is a discipline woven through the entire implementation. Critical Logic\'s IQM approach front-loads test design into requirements, dramatically reducing defect discovery at UAT and beyond.',
+    sections: [
+      {
+        label: 'Test Phases',
+        bullets: [
+          'Unit Testing — developer-level tests for discrete configuration & code',
+          'Integration Testing — validate data flows between system components',
+          'User Acceptance Testing (UAT) — business stakeholders validate against requirements',
+          'Automated Regression — script-driven suite run on every build promotion',
+          'Performance Testing — load, stress & soak tests against SLA thresholds',
+        ]
+      },
+      {
+        label: 'Deployment Sequence',
+        bullets: [
+          'Cutover planning: freeze window, rollback trigger criteria & war-room setup',
+          'Go-Live execution: checklist-driven with real-time status dashboard',
+          'Hypercare: dedicated support team, accelerated SLA for 30–60 days post-launch',
+        ]
+      }
+    ],
+    kpis: [
+      { num: '↑3×', label: 'Test coverage vs. manual test design', type: '' },
+      { num: '↓60%', label: 'UAT defects when IQM test generation used', type: 'org' },
+      { num: '99.9%', label: 'Target availability SLA in first 90 days', type: '' },
+    ],
+    tags: ['Accountability', 'Integration', 'UAT', 'Automated Regression']
+  },
+
+  maint: {
+    icon: '⚡', type: 'mnt', phase: 'Phase 03 · Sustained Operations',
+    title: 'Maintenance, Operations & Evolution',
+    subtitle: 'Post-go-live support, continuous improvement & lifecycle management',
+    desc: 'Go-live is not the finish line — it is the beginning of operations. A well-structured steady-state model protects the investment made during implementation and continuously evolves the system as business needs change.',
+    sections: [
+      {
+        label: 'Operational Workstreams',
+        bullets: [
+          { text: 'Incident Management — L1/L2/L3 support tiers, SLA tracking & escalation paths', org: true },
+          { text: 'Patch & Upgrades — vendor release evaluation, regression testing & promotion schedule', org: true },
+          'Performance Monitoring — dashboards, alerting thresholds & capacity planning',
+          'User Support — helpdesk, knowledge base & self-service portal',
+          'Security & Compliance — vulnerability scanning, access audits & regulatory reviews',
+        ]
+      },
+      {
+        label: 'Continuous Improvement',
+        bullets: [
+          'Quarterly business reviews: system value realization vs. original business case',
+          'Enhancement pipeline: backlog management, prioritization & release cycles',
+          'Automated regression suite — run on every patch to catch regressions early',
+          'Vendor SLA management — scorecard tracking and contract renegotiation',
+        ]
+      }
+    ],
+    kpis: [
+      { num: '<4hr', label: 'Target mean time to restore (MTTR) for P1 incidents', type: 'org' },
+      { num: '99.5%', label: 'Availability target in steady-state operations', type: '' },
+      { num: 'Q-R', label: 'Quarterly release cadence for enhancements', type: '' },
+    ],
+    tags: ['Issue Tracking', 'Vendor SLA', 'Upgrade Pipeline', 'Continuous Improvement']
+  },
+
+};
+
+// ── Mouse tracking ───────────────────────────────────
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+// ── Popup render ────────────────────────────────────
+function showPopup(key) {
+  const d = POPUPS[key];
+  if (!d) return;
+
+  let html = `
+    <div class="popup-header">
+      <div class="popup-icon-wrap ${d.type}">${d.icon}</div>
+      <div class="popup-header-text">
+        <div class="popup-phase-label ${d.type}">${d.phase}</div>
+        <div class="popup-title">${d.title}</div>
+        <div class="popup-subtitle">${d.subtitle}</div>
+      </div>
+    </div>
+    <div class="popup-body">
+      <p class="popup-desc">${d.desc}</p>
+  `;
+
+  if (d.kpis) {
+    html += `<div class="popup-kpi-row">`;
+    d.kpis.forEach(k => {
+      html += `<div class="popup-kpi">
+        <div class="popup-kpi-num ${k.type}">${k.num}</div>
+        <div class="popup-kpi-label">${k.label}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  d.sections.forEach(s => {
+    html += `<div class="popup-section">
+      <div class="popup-section-title">${s.label}</div>
+      <ul class="popup-bullets">`;
+    s.bullets.forEach(b => {
+      const isObj = typeof b === 'object';
+      const txt = isObj ? b.text : b;
+      const cls = (isObj && b.org) ? ' org' : '';
+      html += `<li class="${cls}">${txt}</li>`;
+    });
+    html += `</ul></div>`;
+  });
+
+  if (d.tags) {
+    html += `<div class="popup-tags">`;
+    d.tags.forEach(t => {
+      html += `<span class="popup-tag ${d.type}">${t}</span>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>`; // popup-body
+
+  document.getElementById('popup-content').innerHTML = html;
+  const overlay = document.getElementById('overlay');
+  const popup  = document.getElementById('popup');
+
+  // Position popup near cursor, clamped to viewport
+  const margin  = 16;
+  const popupW  = Math.min(560, window.innerWidth * 0.9);
+  const popupMaxH = window.innerHeight * 0.85;
+  let left = mouseX + margin;
+  let top  = mouseY + margin;
+  if (left + popupW   > window.innerWidth  - margin) left = mouseX - popupW - margin;
+  if (left < margin) left = margin;
+  if (top  + popupMaxH > window.innerHeight - margin) top = Math.max(margin, window.innerHeight - popupMaxH - margin);
+  popup.style.left = left + 'px';
+  popup.style.top  = top  + 'px';
+
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePopup() {
+  document.getElementById('overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function closeOnOverlay(e) {
+  if (e.target === document.getElementById('overlay')) closePopup();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePopup();
+});
+</script>
+</body>
+</html>

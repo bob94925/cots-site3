@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \":*)",
+      "Bash(az staticwebapp list --output table)",
+      "Bash(az group list --output table)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:\\\\Temp\\\\swa-deploy.ps1\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://green-sky-03a2e6f1e.4.azurestaticapps.net\")",
+      "Bash(az rest --method GET --url \"https://management.azure.com/subscriptions/4863df23-237d-45ea-adbe-4ff3e7dbc9ca/resourceGroups/cots-site/providers/Microsoft.Web/staticSites/cots-site?api-version=2022-09-01\" --query \"{hostname:properties.defaultHostname,buildStatus:properties.buildProperties,contentEndpoint:properties.contentDistributionEndpoint}\")",
+      "Bash(curl -s \"https://green-sky-03a2e6f1e.4.azurestaticapps.net\")"
+    ]
+  }
+}
